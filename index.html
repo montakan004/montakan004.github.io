@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Montakan Haocharoen | 3D Interactive Portfolio</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #f2f7f4;
+            --text-dark: #1b382b;
+            --text-muted: #4a6b5d;
+            --accent-green: #2d6a4f;
+            --glass-bg: rgba(255, 255, 255, 0.55);
+            --glass-border: rgba(255, 255, 255, 0.7);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 64, 45, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+            font-family: 'Plus Jakarta Sans', 'Kanit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            scroll-behavior: smooth;
+        }
+
+        /* 3D Canvas Background */
+        #webgl-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* UI Overlay Layer */
+        .ui-layer {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px 24px;
+        }
+
+        /* Glassmorphism Navigation */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 32px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            box-shadow: var(--glass-shadow);
+            position: sticky;
+            top: 20px;
+            z-index: 10;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+            color: var(--accent-green);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-icon {
+            width: 12px;
+            height: 12px;
+            background-color: #52b788;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 400;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-green);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 60px 0;
+        }
+
+        .hero-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            padding: 48px;
+            border-radius: 32px;
+            max-width: 650px;
+            box-shadow: var(--glass-shadow);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 14px;
+            background: rgba(82, 183, 136, 0.15);
+            color: var(--accent-green);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            border: 1px solid rgba(82, 183, 136, 0.3);
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            line-height: 1.2;
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .subtitle-name {
+            font-size: 1.2rem;
+            color: var(--accent-green);
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        p.subtitle {
+            font-size: 1rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 24px;
+            font-weight: 300;
+        }
+
+        .skills-tag-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 32px;
+        }
+
+        .skill-tag {
+            font-size: 0.8rem;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 4px 12px;
+            border-radius: 12px;
+            color: var(--text-dark);
+            border: 1px solid var(--glass-border);
+        }
+
+        .cta-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 28px;
+            background: var(--accent-green);
+            color: white;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(45, 106, 79, 0.2);
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(45, 106, 79, 0.3);
+            background: #1b4332;
+        }
+
+        /* Section Title */
+        .section-title {
+            font-size: 1.8rem;
+            margin: 80px 0 32px 0;
+            color: var(--text-dark);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 8px;
+            height: 24px;
+            background: var(--accent-green);
+            border-radius: 4px;
+        }
+
+        /* Portfolio Grid Section */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            margin-bottom: 60px;
+        }
+
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 28px;
+            box-shadow: var(--glass-shadow);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(82, 183, 136, 0.8);
+        }
+
+        .card-tag {
+            font-size: 0.75rem;
+            color: var(--accent-green);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 12px;
+            color: var(--text-dark);
+        }
+
+        .card p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        .card ul {
+            margin-top: 10px;
+            padding-left: 18px;
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            line-height: 1.5;
+        }
+
+        .card li {
+            margin-bottom: 6px;
+        }
+
+        /* Certificates List Layout */
+        .cert-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 80px;
+        }
+
+        .cert-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            padding: 20px;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+        }
+
+        .cert-card h4 {
+            color: var(--accent-green);
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+
+        .cert-card ul {
+            list-style-type: square;
+            padding-left: 16px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Contact Section */
+        .contact-box {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 80px;
+            box-shadow: var(--glass-shadow);
+        }
+
+        .contact-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .contact-btn {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            color: var(--text-dark);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .contact-btn:hover {
+            background: var(--accent-green);
+            color: white;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 { font-size: 2.2rem; }
+            .hero-card { padding: 32px 24px; }
+            .nav-links { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Three.js Canvas Container -->
+    <div id="webgl-container"></div>
+
+    <!-- UI Elements Layer -->
+    <div class="ui-layer">
+        
+        <!-- Navigation Bar -->
+        <nav>
+            <div class="logo">
+                <span class="logo-icon"></span>
+                MONTAKAN.PORTFOLIO
+            </div>
+            <ul class="nav-links">
+                <li><a href="#about">เกี่ยวกับ</a></li>
+                <li><a href="#projects">ผลงาน</a></li>
+                <li><a href="#certificates">เกียรติบัตร</a></li>
+                <li><a href="#contact">ติดต่อ</a></li>
+            </ul>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="hero" id="about">
+            <div class="hero-card">
+                <span class="badge">🎨 Illustration, Game Art & 3D Design</span>
+                <h1>มนทกานต์ เฮ้าเจริญ</h1>
+                <div class="subtitle-name">Montakan Haocharoen</div>
+                <p class="subtitle">แฟ้มสะสมผลงานการสร้างสรรค์ศิลปะ ดิจิทัลกราฟิก การออกแบบตัวละคร งานเกม และโมเดล 3 มิติ ผสานเข้ากับการประยุกต์ใช้ปัญญาประดิษฐ์ (AI)</p>
+                
+                <div class="skills-tag-group">
+                    <span class="skill-tag">Illustration</span>
+                    <span class="skill-tag">2D Animation</span>
+                    <span class="skill-tag">Game Art</span>
+                    <span class="skill-tag">Character Design</span>
+                    <span class="skill-tag">Product Design</span>
+                    <span class="skill-tag">3D Modeling</span>
+                </div>
+
+                <a href="#projects" class="cta-btn">รับชมผลงานทั้งหมด</a>
+            </div>
+        </section>
+
+        <!-- Projects Grid Section -->
+        <section id="projects">
+            <h2 class="section-title">หมวดหมู่ผลงาน (Work Experience & Projects)</h2>
+            <div class="grid">
+                
+                <!-- 1. Game Concept & Design -->
+                <div class="card">
+                    <div class="card-tag">Game Concept & Design</div>
+                    <h3>การออกแบบและพัฒนาเกม</h3>
+                    <ul>
+                        <li><strong>Coop Coo Project:</strong> ออกแบบ Concept, Logo, ตัวละครนกพิราบ (Cobble, Kage, Wowe), ฉาก บรรยากาศ และ Custom Font สำหรับ UI</li>
+                        <li><strong>Chicky Adventure:</strong> เกมแนว RPG/Adventure รับบทเป็นไก่ผจญภัย ออกแบบ Map Layout และ Key Items</li>
+                        <li><strong>Dream Chamber:</strong> ออกแบบเกมธีม Liminal & Uncanny Space พร้อมระบบสะสมชิ้นส่วนความทรงจำ 10 ชิ้น</li>
+                    </ul>
+                </div>
+
+                <!-- 2. 3D Model & Unity -->
+                <div class="card">
+                    <div class="card-tag">3D & Unity Environment</div>
+                    <h3>งาน 3D และการจัดฉากใน Unity</h3>
+                    <ul>
+                        <li><strong>3D Modeling:</strong> สร้างโมเดล 3 มิติสำหรับตัวละครและองค์ประกอบในเกม</li>
+                        <li><strong>Maze Environment:</strong> สร้างและจัดวางฉากเขาวงกต (Modern Night Maze Walk)</li>
+                        <li><strong>Fox Demon Boss Concept:</strong> จัดทำ Terrain, Lighting, Particle Effects, Post-processing และระบบ Animation บอสฉากป่าลึกลับ</li>
+                    </ul>
+                </div>
+
+                <!-- 3. Character Design -->
+                <div class="card">
+                    <div class="card-tag">Character Design</div>
+                    <h3>การออกแบบตัวละคร</h3>
+                    <ul>
+                        <li>ออกแบบตัวละครสำหรับโมเดล 3D และเกม เช่น นกพิราบชนิดต่างๆ (Cobble, Kage, Irus, Winslow, Ermine)</li>
+                        <li>ออกแบบตัวละครแนว Creative Character (Noctum, Norah)</li>
+                    </ul>
+                </div>
+
+                <!-- 4. Product Design & Packaging -->
+                <div class="card">
+                    <div class="card-tag">Product & Packaging</div>
+                    <h3>การออกแบบผลิตภัณฑ์และบรรจุภัณฑ์</h3>
+                    <ul>
+                        <li><strong>เจี๊ยบแคนดี้ (Jeab Candy):</strong> ลูกอมกระเจี๊ยบ Handmade กล่องย่อยสลายได้ นำกลับมาปลูกผักต่อได้</li>
+                        <li><strong>ซีเรียลอาหารเช้า Wawi:</strong> บรรจุภัณฑ์ซีเรียลพร้อมทานทรงกลมพกพาสะดวก</li>
+                        <li><strong>Board Game Design:</strong> ออกแบบการ์ด โทเคน และส่วนประกอบบอร์ดเกม "Ultimate Potato Roast"</li>
+                    </ul>
+                </div>
+
+                <!-- 5. Storyboard & Video Editing -->
+                <div class="card">
+                    <div class="card-tag">Media & Production</div>
+                    <h3>งานสตอรี่บอร์ดและวิดีโอ</h3>
+                    <ul>
+                        <li><strong>Storyboard:</strong> ลำดับภาพและเขียนสตอรี่บอร์ดสำหรับงานเล่าเรื่องและแอนิเมชัน</li>
+                        <li><strong>Video Editing:</strong> ตัดต่อหนังสั้น และวิดีโอพรีเซนต์สินค้า/หมอนตุ๊กตาส้มโอ</li>
+                    </ul>
+                </div>
+
+                <!-- 6. Infographic & Graphic Design -->
+                <div class="card">
+                    <div class="card-tag">Graphic & Infographic</div>
+                    <h3>งานอินโฟกราฟิกและกราฟิก</h3>
+                    <ul>
+                        <li>จัดทำ Infographic หัวข้อ: *ต้นไม้และการเยียวยา*, *ประวัติหลอดไฟ LED*, *ประวัติศาสตร์โรมัน*, และ *การท่องเที่ยวพิษณุโลก*</li>
+                        <li>ออกแบบภาพปก Social Media (Facebook Cover) สำหรับองค์กร (SK Clean)</li>
+                    </ul>
+                </div>
+
+                <!-- 7. AR Card -->
+                <div class="card">
+                    <div class="card-tag">Augmented Reality</div>
+                    <h3>Augmented Reality (AR) Card</h3>
+                    <p>ออกแบบการ์ด AR และการประยุกต์ใช้เทคโนโลยี Augmented Reality สื่อสารภาพร่วมกับเทคโนโลยีสมัยใหม่</p>
+                </div>
+
+                <!-- 8. Personal Projects & Commissions -->
+                <div class="card">
+                    <div class="card-tag">Commissions & Personal</div>
+                    <h3>งานส่วนตัวและงานรับจ้าง</h3>
+                    <ul>
+                        <li><strong>2D Animation:</strong> แฟนอาร์ต (Son Joke, Madness Combat) และแอนิเมชันมาสคอต</li>
+                        <li><strong>Illustration & Fanart:</strong> แฟนอาร์ต League of Legends (Aphelios, Sett, Misha)</li>
+                        <li><strong>Adoptables / OC:</strong> ออกแบบตัวละคร OC (Kai, Songklod) และขายสิทธิ์ตัวละคร</li>
+                        <li><strong>VTuber Assets:</strong> งาน Bongo Cat และ PNGTuber Commission</li>
+                    </ul>
+                </div>
+
+                <!-- 9. Photography -->
+                <div class="card">
+                    <div class="card-tag">Photography</div>
+                    <h3>งานถ่ายภาพ</h3>
+                    <p>การถ่ายภาพเทคนิคชัดตื้น-ชัดลึก, ภาพถ่ายธรรมชาติ/สัตว์, ภาพถ่ายสถาปัตยกรรม และภาพถ่ายสินค้า</p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Certificates Section -->
+        <section id="certificates">
+            <h2 class="section-title">เกียรติบัตรและการอบรม (Certificates & Training)</h2>
+            <div class="cert-grid">
+                <div class="cert-card">
+                    <h4>Silpakorn University</h4>
+                    <ul>
+                        <li>ปัญญาประดิษฐ์ในชีวิตประจำวัน</li>
+                    </ul>
+                </div>
+                <div class="cert-card">
+                    <h4>CHULA MOOC</h4>
+                    <ul>
+                        <li>AI Series: ChatGPT ช่วยทำวิจัยได้ไม่ต้องเหนื่อยแทบตาย</li>
+                        <li>Generative AI และ ChatGPT ทำงานอย่างไร?</li>
+                    </ul>
+                </div>
+                <div class="cert-card">
+                    <h4>Mahidol Channel Academy</h4>
+                    <ul>
+                        <li>Generative AI สำหรับ First Jobber</li>
+                        <li>ภาษาอังกฤษสำหรับ Speaking</li>
+                    </ul>
+                </div>
+                <div class="cert-card">
+                    <h4>SkillLane & LinkedIn & Certification</h4>
+                    <ul>
+                        <li>SkillLane: AI for Presentation</li>
+                        <li>LinkedIn Learning: Introduction to Artificial Intelligence</li>
+                        <li>Prompt Engineer Certification: Testing AI Generative Image for Beginner</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact">
+            <div class="contact-box">
+                <h2>ช่องทางการติดต่อ (Contact Details)</h2>
+                <p style="color: var(--text-muted); margin-top: 8px;">สนใจร่วมงานหรือสอบถามรายละเอียดเพิ่มเติมได้ที่</p>
+                <div class="contact-links">
+                    <a href="mailto:montakanhaocharoen@gmail.com" class="contact-btn">✉️ montakanhaocharoen@gmail.com</a>
+                    <a href="tel:0613484557" class="contact-btn">📞 061-348-4557</a>
+                    <a href="https://instagram.com/mor_lumol" target="_blank" class="contact-btn">📸 IG: @mor_lumol</a>
+                    <a href="https://pubhtml5.com/fhghy/jsgz/" target="_blank" class="contact-btn">🌐 Online Portfolio</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <p>© 2026 Montakan Haocharoen. All Rights Reserved. Designed with Three.js</p>
+        </footer>
+
+    </div>
+
+    <!-- Three.js Interactive Script -->
+    <script>
+        // 1. Scene, Camera, Renderer Setup
+        const container = document.getElementById('webgl-container');
+        const scene = new THREE.Scene();
+        
+        // Background color (matching CSS bg for seamless transition)
+        scene.background = new THREE.Color('#f2f7f4');
+        scene.fog = new THREE.FogExp2('#f2f7f4', 0.08);
+
+        const camera = new THREE.PerspectiveCamera(
+            45, 
+            window.innerWidth / window.innerHeight, 
+            0.1, 
+            100
+        );
+        camera.position.set(0, 0, 10);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        container.appendChild(renderer.domElement);
+
+        // 2. Lighting Setup
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xe8f5e9, 2);
+        directionalLight.position.set(5, 8, 5);
+        directionalLight.castShadow = true;
+        scene.add(directionalLight);
+
+        const pointLight = new THREE.PointLight(0x52b788, 3, 10);
+        pointLight.position.set(-3, 2, 2);
+        scene.add(pointLight);
+
+        // 3. Materials (Glass & Vegetable Green Palette)
+        const glassMaterial = new THREE.MeshPhysicalMaterial({
+            color: 0xffffff,
+            transmission: 0.9,       // Glass Transparency
+            opacity: 1,
+            transparent: true,
+            roughness: 0.1,
+            ior: 1.5,                 // Refraction index
+            thickness: 1.2,
+            specularIntensity: 1,
+            clearcoat: 1,
+            clearcoatRoughness: 0.1
+        });
+
+        const leafMaterial = new THREE.MeshStandardMaterial({
+            color: 0x2d6a4f,
+            roughness: 0.3,
+            metalness: 0.1
+        });
+
+        const sproutMaterial = new THREE.MeshStandardMaterial({
+            color: 0x74c69d,
+            roughness: 0.2,
+            metalness: 0.0
+        });
+
+        // 4. Create Abstract Vegetable Shapes Group
+        const mainGroup = new THREE.Group();
+
+        // 4.1 Abstract Lettuce/Cabbage (Glass Sphere base with leaf rings)
+        const coreGeometry = new THREE.IcosahedronGeometry(1.2, 2);
+        const glassCore = new THREE.Mesh(coreGeometry, glassMaterial);
+        glassCore.castShadow = true;
+        mainGroup.add(glassCore);
+
+        // Leaf Ring 1
+        const ringGeo1 = new THREE.TorusGeometry(1.6, 0.06, 16, 100);
+        const leafRing1 = new THREE.Mesh(ringGeo1, leafMaterial);
+        leafRing1.rotation.x = Math.PI / 3;
+        mainGroup.add(leafRing1);
+
+        // Leaf Ring 2
+        const ringGeo2 = new THREE.TorusGeometry(2.0, 0.04, 16, 100);
+        const leafRing2 = new THREE.Mesh(ringGeo2, sproutMaterial);
+        leafRing2.rotation.y = Math.PI / 4;
+        mainGroup.add(leafRing2);
+
+        // 4.2 Abstract Carrot/Sprout Shape (Glass Cone)
+        const coneGeo = new THREE.ConeGeometry(0.6, 2, 32);
+        const glassCone = new THREE.Mesh(coneGeo, glassMaterial);
+        glassCone.position.set(3, 1, -2);
+        glassCone.rotation.z = -Math.PI / 6;
+        mainGroup.add(glassCone);
+
+        // 4.3 Floating "Seed" Spheres (Minimal Particles)
+        const seedsGroup = new THREE.Group();
+        const seedGeo = new THREE.SphereGeometry(0.12, 16, 16);
+        
+        for (let i = 0; i < 25; i++) {
+            const seed = new THREE.Mesh(
+                seedGeo, 
+                i % 2 === 0 ? sproutMaterial : glassMaterial
+            );
+            seed.position.set(
+                (Math.random() - 0.5) * 12,
+                (Math.random() - 0.5) * 12,
+                (Math.random() - 0.5) * 8
+            );
+            seedsGroup.add(seed);
+        }
+        scene.add(seedsGroup);
+
+        // Offset Main Group for Layout balance
+        mainGroup.position.set(2, 0, 0);
+        scene.add(mainGroup);
+
+        // 5. Mouse Interactivity / Parallax Effect
+        let mouseX = 0;
+        let mouseY = 0;
+        let targetX = 0;
+        let targetY = 0;
+
+        const windowHalfX = window.innerWidth / 2;
+        const windowHalfY = window.innerHeight / 2;
+
+        document.addEventListener('mousemove', (event) => {
+            mouseX = (event.clientX - windowHalfX) * 0.001;
+            mouseY = (event.clientY - windowHalfY) * 0.001;
+        });
+
+        // 6. Animation Loop
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const elapsedTime = clock.getElapsedTime();
+
+            // Smooth Mouse Movement (Lerp)
+            targetX += (mouseX - targetX) * 0.05;
+            targetY += (mouseY - targetY) * 0.05;
+
+            // Rotate Main 3D Abstract Objects
+            mainGroup.rotation.y = elapsedTime * 0.2 + targetX * 2;
+            mainGroup.rotation.x = Math.sin(elapsedTime * 0.3) * 0.2 + targetY * 2;
+            
+            // Gentle Floating Effect
+            mainGroup.position.y = Math.sin(elapsedTime * 0.8) * 0.2;
+
+            // Slowly rotate floating seeds
+            seedsGroup.rotation.y = elapsedTime * 0.05;
+            seedsGroup.rotation.x = elapsedTime * 0.03;
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // 7. Responsive Window Resizing
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            // Responsive Position Adjustment
+            if (window.innerWidth < 768) {
+                mainGroup.position.set(0, 1, -2);
+            } else {
+                mainGroup.position.set(2, 0, 0);
+            }
+        });
+
+        // Initial Responsive Check
+        if (window.innerWidth < 768) {
+            mainGroup.position.set(0, 1, -2);
+        }
+    </script>
+</body>
+</html>
