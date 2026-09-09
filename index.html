@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Montakan Haocharoen — 3D Portfolio</title>
+
+  <!-- Three.js -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.161.0/examples/js/controls/OrbitControls.js"></script>
+
+  <!-- Soft, rounded Thai-friendly font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#f3f7f0;
+      --bg2:#e8f0e4;
+      --green:#315d43;
+      --green2:#5f876c;
+      --mint:#b9cfbb;
+      --cream:#fbfcf8;
+      --text:#26372c;
+      --muted:#6d7c72;
+      --line:#d7e2d5;
+      --shadow:0 20px 60px rgba(45,75,54,.10);
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 10% 10%, rgba(185,207,187,.35), transparent 28%),
+        radial-gradient(circle at 90% 25%, rgba(95,135,108,.12), transparent 30%),
+        var(--bg);
+      font-family:'Nunito','Kanit',sans-serif;
+      overflow-x:hidden;
+    }
+    a{color:inherit;text-decoration:none}
+    nav{
+      position:fixed;top:18px;left:50%;transform:translateX(-50%);
+      width:min(920px,92vw);z-index:20;
+      display:flex;justify-content:space-between;align-items:center;
+      padding:12px 18px 12px 22px;
+      background:rgba(251,252,248,.78);backdrop-filter:blur(16px);
+      border:1px solid rgba(215,226,213,.9);border-radius:999px;
+      box-shadow:0 10px 35px rgba(45,75,54,.08);
+    }
+    .brand{font-weight:800;letter-spacing:.5px;color:var(--green)}
+    nav .links{display:flex;gap:22px;font-size:14px;color:var(--muted)}
+    nav .links a:hover{color:var(--green)}
+    .hero{
+      min-height:100vh;position:relative;display:grid;
+      grid-template-columns:1fr 1fr;align-items:center;
+      max-width:1200px;margin:auto;padding:110px 30px 70px;
+    }
+    #scene{
+      position:absolute;inset:0;z-index:-1;
+      pointer-events:none;
+    }
+    .hero-copy{max-width:620px}
+    .eyebrow{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 13px;border-radius:999px;
+      background:#e4eee2;color:var(--green);
+      font-size:13px;font-weight:700;margin-bottom:18px;
+    }
+    .dot{width:8px;height:8px;border-radius:50%;background:var(--green2)}
+    h1{
+      font-family:'Kanit',sans-serif;font-size:clamp(48px,7vw,88px);
+      line-height:.98;margin:0 0 14px;font-weight:500;letter-spacing:-2px;
+      color:var(--green);
+    }
+    .nickname{
+      font-size:21px;color:var(--green2);font-weight:700;margin-bottom:20px
+    }
+    .intro{font-size:17px;line-height:1.8;color:var(--muted);max-width:570px}
+    .chips{display:flex;flex-wrap:wrap;gap:9px;margin-top:25px}
+    .chip{
+      padding:9px 13px;background:rgba(255,255,255,.68);
+      border:1px solid var(--line);border-radius:999px;font-size:13px;
+    }
+    .hero-side{display:flex;justify-content:center;align-items:center;min-height:500px}
+    .orb-card{
+      width:330px;height:390px;border-radius:44% 56% 50% 50%/46% 45% 55% 54%;
+      background:rgba(255,255,255,.35);border:1px solid rgba(255,255,255,.7);
+      box-shadow:var(--shadow);backdrop-filter:blur(10px);
+      display:flex;align-items:flex-end;padding:30px;transform:rotate(5deg);
+    }
+    .orb-card p{transform:rotate(-5deg);margin:0;color:var(--muted);line-height:1.7}
+    section{max-width:1100px;margin:auto;padding:100px 30px}
+    .section-title{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:35px}
+    .section-title h2{font-family:'Kanit';font-size:42px;font-weight:500;color:var(--green);margin:0}
+    .section-title span{color:var(--muted);font-size:14px}
+    .about{
+      display:grid;grid-template-columns:1.1fr .9fr;gap:28px;
+    }
+    .card{
+      background:rgba(255,255,255,.7);border:1px solid var(--line);
+      border-radius:28px;padding:30px;box-shadow:var(--shadow);
+    }
+    .bio{font-size:17px;line-height:1.9;color:var(--muted)}
+    .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:22px}
+    .info{
+      background:var(--bg2);border-radius:18px;padding:16px;
+    }
+    .info small{display:block;color:var(--muted);font-size:12px;margin-bottom:4px}
+    .info strong{font-size:14px}
+    .skills{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+    .skill{padding:11px 14px;border-radius:15px;background:var(--cream);border:1px solid var(--line)}
+    .projects{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+    .project{
+      min-height:250px;padding:23px;border-radius:26px;
+      background:linear-gradient(145deg,#ffffff,#edf4ea);
+      border:1px solid var(--line);box-shadow:var(--shadow);
+      transition:.3s ease;position:relative;overflow:hidden;
+    }
+    .project:hover{transform:translateY(-8px)}
+    .project:before{
+      content:"";position:absolute;width:150px;height:150px;border-radius:50%;
+      background:rgba(95,135,108,.13);right:-45px;top:-45px;
+    }
+    .num{font-size:12px;color:var(--green2);font-weight:800}
+    .project h3{font-family:'Kanit';font-weight:500;font-size:24px;margin:28px 0 7px;color:var(--green)}
+    .project p{font-size:14px;line-height:1.7;color:var(--muted);margin:0}
+    .project .tag{
+      display:inline-block;margin-top:18px;padding:6px 10px;border-radius:10px;
+      background:#dfeade;color:var(--green);font-size:11px
+    }
+    .contact{
+      text-align:center;background:var(--green);color:#eef6ed;
+      border-radius:42px;padding:70px 30px;box-shadow:var(--shadow);
+    }
+    .contact h2{font-family:'Kanit';font-size:48px;font-weight:500;margin:0 0 10px}
+    .contact p{opacity:.82;margin:8px 0 24px}
+    .contact a{
+      display:inline-block;background:#f3f7f0;color:var(--green);
+      padding:13px 21px;border-radius:999px;font-weight:800
+    }
+    footer{text-align:center;padding:35px;color:var(--muted);font-size:13px}
+    .scroll{position:absolute;bottom:25px;left:30px;color:var(--muted);font-size:12px;letter-spacing:2px}
+    @media(max-width:800px){
+      nav .links{display:none}
+      .hero{grid-template-columns:1fr;padding-top:130px}
+      .hero-side{min-height:250px}
+      .orb-card{width:260px;height:250px}
+      .about{grid-template-columns:1fr}
+      .projects{grid-template-columns:1fr}
+      section{padding:70px 20px}
+      .section-title{display:block}
+      .section-title span{display:block;margin-top:8px}
+    }
+  </style>
+</head>
+
+<body>
+  <nav>
+    <div class="brand">Khing — Portfolio</div>
+    <div class="links">
+      <a href="#about">About</a>
+      <a href="#works">Works</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </nav>
+
+  <main>
+    <section class="hero" id="home">
+      <div id="scene"></div>
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="dot"></span> 3D PORTFOLIO · 2026</div>
+        <h1>มนทกานต์<br>เฮ้าเจริญ</h1>
+        <div class="nickname">ชื่อเล่น “ขิง” · Khing</div>
+        <p class="intro">
+          นักศึกษาชั้นปีที่ 4 สาขาเกมและแอนิเมชัน
+          คณะสถาปัตยกรรมศาสตร์และการออกแบบ
+          มหาวิทยาลัยเทคโนโลยีราชมงคลรัตนโกสินทร์ ศาลายา
+        </p>
+        <div class="chips">
+          <span class="chip">Illustration</span>
+          <span class="chip">2D Animation</span>
+          <span class="chip">Game Art</span>
+          <span class="chip">3D Model</span>
+        </div>
+      </div>
+
+      <div class="hero-side">
+        <div class="orb-card">
+          <p>
+            <b>Creative • Curious • Growing</b><br>
+            พอร์ตโฟลิโอในโทนสีเขียวที่สบายตา
+            ถ่ายทอดตัวตนผ่านงานภาพ เกม แอนิเมชัน
+            และการทดลองสร้างสรรค์หลากหลายรูปแบบ
+          </p>
+        </div>
+      </div>
+      <div class="scroll">SCROLL ↓</div>
+    </section>
+
+    <section id="about">
+      <div class="section-title">
+        <h2>About Me</h2><span>รู้จักขิงมากขึ้นอีกนิด</span>
+      </div>
+      <div class="about">
+        <div class="card">
+          <p class="bio">
+            สวัสดีค่ะ ขิง — มนทกานต์ เฮ้าเจริญ
+            เป็นนักศึกษาที่สนใจงานศิลปะดิจิทัล การออกแบบตัวละคร
+            งานเกม และแอนิเมชัน ชอบเรียนรู้ผ่านการลงมือทำ
+            และพัฒนางานจากไอเดียแรกไปสู่ผลงานจริง
+          </p>
+          <div class="skills">
+            <span class="skill">Character Design</span>
+            <span class="skill">Game Concept</span>
+            <span class="skill">Storyboard</span>
+            <span class="skill">3D Modeling</span>
+            <span class="skill">Unity</span>
+            <span class="skill">Video Editing</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="info-grid">
+            <div class="info"><small>ชื่อ</small><strong>มนทกานต์ เฮ้าเจริญ</strong></div>
+            <div class="info"><small>ชื่อเล่น</small><strong>ขิง / Khing</strong></div>
+            <div class="info"><small>ระดับ</small><strong>นักศึกษาชั้นปีที่ 4</strong></div>
+            <div class="info"><small>สาขา</small><strong>เกมและแอนิเมชัน</strong></div>
+            <div class="info"><small>คณะ</small><strong>สถาปัตยกรรมศาสตร์และการออกแบบ</strong></div>
+            <div class="info"><small>มหาวิทยาลัย</small><strong>มทร.รัตนโกสินทร์ ศาลายา</strong></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="works">
+      <div class="section-title">
+        <h2>Selected Works</h2><span>ผลงานที่อยู่ใน Portfolio</span>
+      </div>
+      <div class="projects">
+        <article class="project"><div class="num">01 · ART</div><h3>Illustration</h3><p>งานภาพประกอบและงานภาพดิจิทัล รวมถึงงานส่วนตัวและงาน Fanart</p><span class="tag">Digital Art</span></article>
+        <article class="project"><div class="num">02 · DESIGN</div><h3>Character Design</h3><p>ออกแบบตัวละครตั้งแต่แนวคิด รูปลักษณ์ คาแรกเตอร์ ไปจนถึงการเตรียมสำหรับ 3D</p><span class="tag">Character</span></article>
+        <article class="project"><div class="num">03 · GAME</div><h3>Game Concept</h3><p>ออกแบบเกม ด่าน โลโก้ UI และแนวคิดสำหรับโปรเจกต์เกม เช่น Coop Coo และ Dream Chamber</p><span class="tag">Game Art</span></article>
+        <article class="project"><div class="num">04 · 3D</div><h3>3D Model</h3><p>ผลงานการสร้างโมเดล 3D และการนำองค์ประกอบไปใช้กับงานเกม</p><span class="tag">3D</span></article>
+        <article class="project"><div class="num">05 · UNITY</div><h3>Game Environment</h3><p>จัดวาง Environment และ Layout ภายใน Unity ทั้งเขาวงกต ป่า และฉากบอส</p><span class="tag">Unity</span></article>
+        <article class="project"><div class="num">06 · MOTION</div><h3>2D Animation</h3><p>งานแอนิเมชัน สตอรีบอร์ด และโปรเจกต์แฟนแอนิเมชันที่เน้นการเล่าเรื่อง</p><span class="tag">Animation</span></article>
+        <article class="project"><div class="num">07 · MEDIA</div><h3>Video Editing</h3><p>งานตัดต่อวิดีโอและงานนำเสนอสินค้า รวมถึงงานสื่อดิจิทัล</p><span class="tag">Editing</span></article>
+        <article class="project"><div class="num">08 · AR</div><h3>Augmented Reality</h3><p>ผลงาน AR Card และการทดลองสร้างประสบการณ์แบบ Interactive</p><span class="tag">Interactive</span></article>
+        <article class="project"><div class="num">09 · PERSONAL</div><h3>Commissions</h3><p>งานส่วนตัว งานรับจ้าง Adoptable, PNGTube และงานออกแบบ Social Media</p><span class="tag">Personal Work</span></article>
+      </div>
+    </section>
+
+    <section id="contact">
+      <div class="contact">
+        <h2>Let's create something.</h2>
+        <p>ขอบคุณที่สละเวลาชม Portfolio ของขิงค่ะ</p>
+        <a href="mailto:montakanhaocharoen@gmail.com">montakanhaocharoen@gmail.com</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    © 2026 Montakan Haocharoen · Khing
+  </footer>
+
+  <script>
+    // ---------- Three.js: floating green 3D botanical sculpture ----------
+    const container = document.getElementById('scene');
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(
+      42, window.innerWidth / window.innerHeight, 0.1, 100
+    );
+    camera.position.set(0, 0.2, 7);
+
+    const renderer = new THREE.WebGLRenderer({alpha:true, antialias:true});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    container.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableZoom = false;
+    controls.enablePan = false;
+    controls.enableDamping = true;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.45;
+
+    scene.add(new THREE.AmbientLight(0xffffff, 1.8));
+    const key = new THREE.DirectionalLight(0xdcebdc, 3);
+    key.position.set(3, 4, 5);
+    scene.add(key);
+
+    const group = new THREE.Group();
+    group.position.set(2.1, 0.15, 0);
+    scene.add(group);
+
+    const stemMat = new THREE.MeshStandardMaterial({
+      color:0x5f876c, roughness:.7, metalness:0
+    });
+    const leafMat = new THREE.MeshStandardMaterial({
+      color:0x8eae91, roughness:.75, metalness:0
+    });
+    const lightMat = new THREE.MeshStandardMaterial({
+      color:0xc4d8c3, roughness:.65, metalness:0
+    });
+
+    // central organic sphere
+    const core = new THREE.Mesh(
+      new THREE.IcosahedronGeometry(1.25, 3),
+      new THREE.MeshStandardMaterial({color:0x6f9679, roughness:.55})
+    );
+    core.scale.set(1,1.12,.9);
+    group.add(core);
+
+    // small floating leaves / petals
+    const leafGeo = new THREE.SphereGeometry(.42, 24, 16);
+    for(let i=0;i<18;i++){
+      const leaf = new THREE.Mesh(leafGeo, i%3===0 ? lightMat : leafMat);
+      const a = i/18*Math.PI*2;
+      const r = 1.7 + (i%4)*.18;
+      leaf.position.set(Math.cos(a)*r, Math.sin(a*1.8)*.7, Math.sin(a)*r*.55);
+      leaf.scale.set(.45, .18, .72);
+      leaf.rotation.z = a;
+      leaf.rotation.y = a*.7;
+      group.add(leaf);
+    }
+
+    // orbiting rings
+    for(let i=0;i<3;i++){
+      const ring = new THREE.Mesh(
+        new THREE.TorusGeometry(1.8+i*.22,.012,10,100),
+        new THREE.MeshBasicMaterial({color:0x7ea184,transparent:true,opacity:.45})
+      );
+      ring.rotation.x = Math.PI/2 + i*.25;
+      ring.rotation.y = i*.45;
+      group.add(ring);
+    }
+
+    // tiny particles
+    const pts = [];
+    for(let i=0;i<90;i++){
+      pts.push((Math.random()-.5)*7, (Math.random()-.5)*5, (Math.random()-.5)*4);
+    }
+    const pgeo = new THREE.BufferGeometry();
+    pgeo.setAttribute('position', new THREE.Float32BufferAttribute(pts,3));
+    const points = new THREE.Points(
+      pgeo,
+      new THREE.PointsMaterial({color:0x7ea184,size:.025,transparent:true,opacity:.55})
+    );
+    scene.add(points);
+
+    function animate(){
+      requestAnimationFrame(animate);
+      const t = performance.now()*.001;
+      core.rotation.x = t*.08;
+      core.rotation.y = t*.12;
+      group.position.y = .15 + Math.sin(t*.7)*.08;
+      points.rotation.y = t*.015;
+      controls.update();
+      renderer.render(scene,camera);
+    }
+    animate();
+
+    window.addEventListener('resize',()=>{
+      camera.aspect = window.innerWidth/window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth,window.innerHeight);
+    });
+  </script>
+</body>
+</html>
