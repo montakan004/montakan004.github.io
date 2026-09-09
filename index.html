@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Montakan Haocharoen — 3D Portfolio</title>
+  <meta name="description" content="3D Portfolio ของ มนทกานต์ เฮ้าเจริญ (Khing) — Illustration, 2D Animation, Game Art, 3D Model และ Interactive Design" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap');
+
+    :root{
+      --ink:#10352a;
+      --deep:#0b2a20;
+      --green:#2f7655;
+      --mint:#dff4e7;
+      --leaf:#86b89a;
+      --glass:rgba(255,255,255,.34);
+      --line:rgba(38,100,70,.22);
+      --shadow:0 30px 90px rgba(26,77,54,.15);
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      color:var(--ink);
+      background:
+        radial-gradient(circle at 10% 10%, rgba(137,199,157,.32), transparent 25%),
+        radial-gradient(circle at 90% 25%, rgba(213,244,224,.8), transparent 30%),
+        linear-gradient(135deg,#f6fbf6 0%,#dcefe1 45%,#f9fcf8 100%);
+      font-family:"IBM Plex Sans Thai",system-ui,sans-serif;
+      overflow-x:hidden;
+    }
+    body:before{
+      content:"";
+      position:fixed; inset:0; pointer-events:none; z-index:2;
+      opacity:.13;
+      background-image:url("data:image/svg+xml,%3Csvg width='140' height='140' viewBox='0 0 140 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E");
+      mix-blend-mode:multiply;
+    }
+    a{color:inherit;text-decoration:none}
+    button{font:inherit}
+
+    #scene{
+      position:fixed; inset:0; z-index:0;
+      pointer-events:none;
+    }
+    .webgl-label{
+      position:fixed; right:24px; bottom:18px; z-index:5;
+      padding:8px 12px; border:1px solid var(--line);
+      border-radius:999px; background:rgba(255,255,255,.4);
+      backdrop-filter:blur(12px); font-size:11px; letter-spacing:.12em;
+      text-transform:uppercase; color:#2e6b50;
+    }
+
+    .nav{
+      position:fixed; top:18px; left:50%; transform:translateX(-50%);
+      width:min(1120px,calc(100% - 32px)); z-index:20;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:12px 16px 12px 20px;
+      border:1px solid rgba(35,99,66,.18);
+      background:rgba(249,255,250,.55);
+      backdrop-filter:blur(22px) saturate(125%);
+      border-radius:22px; box-shadow:0 10px 35px rgba(22,75,49,.08);
+    }
+    .brand{font-weight:700; letter-spacing:.04em}
+    .brand span{font-weight:400; opacity:.65}
+    .navlinks{display:flex; gap:7px; flex-wrap:wrap}
+    .navlinks a{
+      padding:8px 11px; border-radius:12px; font-size:13px; opacity:.72;
+    }
+    .navlinks a:hover{background:rgba(95,155,116,.12);opacity:1}
+
+    main{position:relative;z-index:3}
+    section{
+      width:min(1120px,calc(100% - 32px));
+      margin:auto;
+      min-height:100vh;
+      padding:140px 0 100px;
+      position:relative;
+    }
+    .hero{display:grid;grid-template-columns:1.1fr .9fr;align-items:center;gap:50px;min-height:100vh}
+    .eyebrow{
+      display:inline-flex;gap:9px;align-items:center;
+      font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+      color:#3e7658;margin-bottom:22px;
+    }
+    .dot{width:8px;height:8px;border-radius:50%;background:#65a47d;box-shadow:0 0 0 6px rgba(101,164,125,.12)}
+    h1{
+      margin:0; font-family:"Playfair Display",serif;
+      font-size:clamp(64px,10vw,145px); line-height:.78;
+      letter-spacing:-.06em; font-weight:500;
+    }
+    h1 em{font-weight:500}
+    .hero-sub{
+      margin:34px 0 0; max-width:650px; font-size:18px; line-height:1.8;
+      color:#345a48;
+    }
+    .hero-meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:25px}
+    .pill{
+      border:1px solid var(--line); border-radius:999px; padding:9px 14px;
+      background:rgba(255,255,255,.36); backdrop-filter:blur(12px);
+      font-size:12px;
+    }
+    .hero-card{
+      min-height:540px; position:relative; display:grid; place-items:center;
+      perspective:1200px;
+    }
+    .glass-orb{
+      width:330px;height:330px;border-radius:50%;
+      background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.95),rgba(255,255,255,.24) 28%,rgba(109,170,129,.12) 65%,rgba(255,255,255,.1));
+      border:1px solid rgba(255,255,255,.8);
+      box-shadow:inset -25px -30px 70px rgba(64,127,85,.13),inset 20px 15px 40px rgba(255,255,255,.75),0 50px 100px rgba(38,93,59,.18);
+      position:relative; transform:translateZ(0);
+      animation:float 6s ease-in-out infinite;
+    }
+    .glass-orb:after{
+      content:"";position:absolute;width:125px;height:60px;border-radius:50%;
+      left:56px;top:43px;background:rgba(255,255,255,.42);filter:blur(8px);transform:rotate(-25deg);
+    }
+    .orb-text{
+      position:absolute; inset:0; display:grid; place-items:center;
+      font-family:"Playfair Display",serif; font-size:86px; color:rgba(31,91,57,.66);
+      mix-blend-mode:multiply;
+    }
+    .orbit{
+      position:absolute;border:1px solid rgba(52,117,76,.28);border-radius:50%;
+      width:450px;height:220px;transform:rotate(-18deg);
+    }
+    .orbit:nth-child(2){transform:rotate(48deg);width:400px;height:180px}
+    .leaf{
+      position:absolute;font-size:40px;opacity:.45;filter:blur(.2px);
+      animation:float 5s ease-in-out infinite;
+    }
+    .leaf.l1{top:9%;right:5%}.leaf.l2{bottom:12%;left:4%;animation-delay:-2s}
+    .leaf.l3{top:50%;left:0;animation-delay:-3.2s}
+    @keyframes float{50%{transform:translateY(-14px) rotate(2deg)}}
+
+    .section-head{display:flex;justify-content:space-between;align-items:end;gap:30px;margin-bottom:50px}
+    .section-kicker{font-size:12px;letter-spacing:.18em;text-transform:uppercase;opacity:.55}
+    h2{font-family:"Playfair Display",serif;font-size:clamp(45px,7vw,88px);font-weight:500;line-height:.95;margin:8px 0 0;letter-spacing:-.04em}
+    .section-note{max-width:410px;line-height:1.75;color:#4b6e5c;font-size:14px}
+
+    .about-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:26px}
+    .glass-panel{
+      border:1px solid rgba(255,255,255,.7);
+      background:linear-gradient(135deg,rgba(255,255,255,.52),rgba(255,255,255,.2));
+      box-shadow:var(--shadow),inset 0 1px rgba(255,255,255,.75);
+      backdrop-filter:blur(22px) saturate(120%);
+      border-radius:30px;padding:32px;
+    }
+    .identity{min-height:400px;display:flex;flex-direction:column;justify-content:space-between}
+    .monogram{
+      width:95px;height:95px;border-radius:27px;display:grid;place-items:center;
+      font-family:"Playfair Display",serif;font-size:44px;
+      background:linear-gradient(145deg,rgba(255,255,255,.82),rgba(126,180,145,.25));
+      border:1px solid rgba(255,255,255,.85);box-shadow:0 25px 50px rgba(37,96,61,.15);
+    }
+    .identity h3{font-family:"Playfair Display",serif;font-size:36px;margin:20px 0 8px}
+    .identity p{margin:0;line-height:1.8;color:#50705f}
+    .contact-list{display:grid;gap:11px;margin-top:20px;font-size:13px}
+    .contact-list div{padding-bottom:10px;border-bottom:1px solid rgba(43,103,70,.12)}
+    .bio-copy{font-size:16px;line-height:2}
+    .bio-copy strong{color:#2d6f4d}
+    .skills{display:flex;flex-wrap:wrap;gap:9px;margin-top:26px}
+    .skill{padding:10px 13px;border:1px solid rgba(47,111,75,.18);border-radius:13px;background:rgba(255,255,255,.25);font-size:12px}
+
+    .project-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+    .project{
+      min-height:280px;position:relative;overflow:hidden;cursor:pointer;
+      transition:transform .35s ease,box-shadow .35s ease;
+    }
+    .project:hover{transform:translateY(-7px);box-shadow:0 35px 80px rgba(31,90,55,.2)}
+    .project:before{
+      content:"";position:absolute;inset:auto -20% -55% -20%;height:75%;
+      background:radial-gradient(ellipse,rgba(83,154,106,.28),transparent 67%);
+    }
+    .project-num{font-size:11px;letter-spacing:.14em;opacity:.5}
+    .project h3{font-family:"Playfair Display",serif;font-size:38px;font-weight:500;margin:45px 0 8px;max-width:80%}
+    .project p{margin:0;color:#54705f;font-size:13px;line-height:1.7;max-width:80%}
+    .project .tag{position:absolute;bottom:25px;right:25px;font-size:11px;padding:7px 10px;border-radius:999px;background:rgba(255,255,255,.35);border:1px solid rgba(48,108,72,.15)}
+    .project.large{grid-column:span 2;min-height:360px}
+    .project.large h3{font-size:54px}
+    .project-icon{
+      position:absolute;right:25px;top:30px;width:95px;height:95px;border-radius:28px;
+      border:1px solid rgba(255,255,255,.85);background:rgba(255,255,255,.28);
+      display:grid;place-items:center;font-size:43px;box-shadow:inset 8px 8px 22px rgba(255,255,255,.6);
+      transform:rotate(12deg);
+    }
+
+    .timeline{display:grid;gap:12px}
+    .timeline-item{display:grid;grid-template-columns:100px 1fr auto;gap:22px;align-items:center}
+    .timeline-year{font-family:"Playfair Display",serif;font-size:24px}
+    .timeline-line{height:1px;background:var(--line)}
+    .timeline-item p{margin:0;font-size:13px;color:#587260}
+    .timeline-type{font-size:11px;opacity:.55;text-transform:uppercase;letter-spacing:.1em}
+
+    .contact{
+      min-height:80vh;display:grid;place-items:center;text-align:center;
+    }
+    .contact h2{font-size:clamp(60px,10vw,130px)}
+    .contact p{max-width:650px;margin:25px auto;line-height:1.9;color:#4f705e}
+    .contact-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:28px}
+    .cta{
+      padding:12px 17px;border-radius:999px;border:1px solid rgba(39,105,67,.25);
+      background:rgba(255,255,255,.4);backdrop-filter:blur(12px);font-size:13px;
+      transition:.25s;
+    }
+    .cta:hover{background:rgba(255,255,255,.7);transform:translateY(-2px)}
+
+    footer{position:relative;z-index:3;width:min(1120px,calc(100% - 32px));margin:auto;padding:20px 0 40px;display:flex;justify-content:space-between;font-size:11px;opacity:.55}
+
+    @media(max-width:800px){
+      .navlinks a:nth-child(-n+2){display:none}
+      .hero{grid-template-columns:1fr;padding-top:130px}
+      .hero-card{min-height:430px}
+      .glass-orb{width:250px;height:250px}.orb-text{font-size:65px}.orbit{width:330px;height:170px}
+      .about-grid,.project-grid{grid-template-columns:1fr}
+      .project.large{grid-column:span 1}.project.large h3{font-size:42px}
+      .section-head{display:block}.section-note{margin-top:20px}
+      .timeline-item{grid-template-columns:70px 1fr}.timeline-type{display:none}
+    }
+  </style>
+</head>
+<body>
+  <div id="scene"></div>
+  <div class="webgl-label">three.js / glass nature</div>
+
+  <nav class="nav">
+    <a class="brand" href="#top">KHING <span>/ PORTFOLIO</span></a>
+    <div class="navlinks">
+      <a href="#about">About</a>
+      <a href="#works">Works</a>
+      <a href="#journey">Journey</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </nav>
+
+  <main id="top">
+    <section class="hero">
+      <div>
+        <div class="eyebrow"><i class="dot"></i> Creative Portfolio · 3D Edition</div>
+        <h1>Montakan<br><em>Haocharoen</em></h1>
+        <p class="hero-sub">
+          มนทกานต์ เฮ้าเจริญ <b>“ขิง / Khing”</b><br>
+          นักศึกษาสายสร้างสรรค์ ผู้สนใจ <b>Illustration, 2D Animation, Game Art,
+          Character Design, 3D Model</b> และการออกแบบสื่อดิจิทัล
+        </p>
+        <div class="hero-meta">
+          <span class="pill">RMUTR Salaya</span>
+          <span class="pill">Nature × Glass</span>
+          <span class="pill">Illustration • Game • 3D</span>
+        </div>
+      </div>
+
+      <div class="hero-card">
+        <div class="orbit"></div><div class="orbit"></div>
+        <div class="glass-orb"><div class="orb-text">K</div></div>
+        <div class="leaf l1">𖥧</div><div class="leaf l2">❧</div><div class="leaf l3">⌁</div>
+      </div>
+    </section>
+
+    <section id="about">
+      <div class="section-head">
+        <div><div class="section-kicker">01 / Profile</div><h2>About Khing</h2></div>
+        <div class="section-note">พอร์ตโฟลิโอฉบับนี้ต่อยอดจากผลงานระหว่างการศึกษา ทั้งงานภาพ กราฟิก เกม และสื่อดิจิทัล โดยเน้นกระบวนการคิด การออกแบบ และการลงมือปฏิบัติจริง</div>
+      </div>
+
+      <div class="about-grid">
+        <article class="glass-panel identity">
+          <div>
+            <div class="monogram">K</div>
+            <h3>มนทกานต์ เฮ้าเจริญ</h3>
+            <p>Montakan Haocharoen · Khing</p>
+          </div>
+          <div class="contact-list">
+            <div>มหาวิทยาลัยเทคโนโลยีราชมงคลรัตนโกสินทร์ ศาลายา</div>
+            <div>Illustration • 2D Animation • Game Art</div>
+            <div>Portfolio · Digital Media · Visual Design</div>
+          </div>
+        </article>
+
+        <article class="glass-panel">
+          <div class="section-kicker">Creative direction</div>
+          <p class="bio-copy">
+            ผลงานของ Khing ครอบคลุมตั้งแต่ <strong>Photography</strong>,
+            <strong>Product Design</strong>, <strong>Infographic</strong> และงานตัดต่อวิดีโอ
+            ไปจนถึง <strong>Game Concept & Design</strong>, Character Design, Storyboard,
+            3D Model และการจัดวาง Environment ภายใน Unity
+          </p>
+          <p class="bio-copy">
+            ความสนใจเด่นคือการสร้างโลกและเรื่องราวผ่านภาพ ตั้งแต่งานตัวละคร นกและสิ่งมีชีวิต
+            ไปจนถึงฉากเกม เช่น <strong>Dream Chamber</strong> และธีมป่าลึกลับ/ญี่ปุ่น/จิ้งจอก
+          </p>
+          <div class="skills">
+            <span class="skill">Illustration</span><span class="skill">2D Animation</span>
+            <span class="skill">Character Design</span><span class="skill">Game Concept</span>
+            <span class="skill">3D Model</span><span class="skill">Unity Environment</span>
+            <span class="skill">Storyboard</span><span class="skill">Graphic Design</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="works">
+      <div class="section-head">
+        <div><div class="section-kicker">02 / Selected Works</div><h2>Works in Motion</h2></div>
+        <div class="section-note">เลือกหมวดผลงานจาก Portfolio เพื่อเล่าเส้นทางการเรียนรู้ ตั้งแต่การสังเกตโลกจริง ไปจนถึงการสร้างโลกเสมือน</div>
+      </div>
+
+      <div class="project-grid">
+        <article class="glass-panel project large">
+          <span class="project-num">05 — GAME CONCEPT & DESIGN</span>
+          <div class="project-icon">◌</div>
+          <h3>Dream Chamber</h3>
+          <p>“ภวังค์ความฝัน” — ความฝันที่ต้องตื่น เศษเสี้ยวของความทรงจำกระจัดกระจาย หลงเหลือหรือเลือนหาย จนไม่รู้ว่ากำลังก้าวไปข้างหน้าหรือกำลังเดินวน</p>
+          <span class="tag">Game Project</span>
+        </article>
+
+        <article class="glass-panel project">
+          <span class="project-num">09 — UNITY</span>
+          <div class="project-icon">✦</div>
+          <h3>Forest / Fox</h3>
+          <p>จัดวาง Terrain และ Environment สำหรับเส้นทางสู่บอส พร้อม Lighting, Particles และ Post-processing</p>
+          <span class="tag">Environment</span>
+        </article>
+
+        <article class="glass-panel project">
+          <span class="project-num">06 — CHARACTER</span>
+          <div class="project-icon">♧</div>
+          <h3>Character Design</h3>
+          <p>ออกแบบตัวละครและคาแรกเตอร์ เช่น Kage, Cobble, Coop Coo, Winslow, Irus และ Ermine</p>
+          <span class="tag">Characters</span>
+        </article>
+
+        <article class="glass-panel project">
+          <span class="project-num">02 — PRODUCT</span>
+          <div class="project-icon">◍</div>
+          <h3>Product Design</h3>
+          <p>ตั้งแต่ Sketch, Package, Logo และ Mascot ไปจนถึงผลิตภัณฑ์สมบูรณ์ โดยมีแนวคิดรักโลกและบรรจุภัณฑ์ย่อยสลายตามธรรมชาติ</p>
+          <span class="tag">Eco Design</span>
+        </article>
+
+        <article class="glass-panel project">
+          <span class="project-num">01 — PHOTOGRAPHY</span>
+          <div class="project-icon">⌾</div>
+          <h3>Nature Study</h3>
+          <p>ภาพถ่ายธรรมชาติ วิว พืช ภาพชัดตื้น–ชัดลึก และภาพถ่ายสินค้า จากการฝึกสังเกตแสงและองค์ประกอบ</p>
+          <span class="tag">Photography</span>
+        </article>
+      </div>
+    </section>
+
+    <section id="journey">
+      <div class="section-head">
+        <div><div class="section-kicker">03 / Journey</div><h2>Learning Path</h2></div>
+        <div class="section-note">ผลงานในเล่มสะท้อนการพัฒนาทักษะผ่านการเรียนและการลงมือทำจริง</div>
+      </div>
+      <div class="glass-panel">
+        <div class="timeline">
+          <div class="timeline-item"><div class="timeline-year">01</div><div><b>Photography</b><p>ฝึกการถ่ายภาพ ธรรมชาติ วิว พืช และสินค้า</p></div><div class="timeline-type">Observe</div></div>
+          <div class="timeline-line"></div>
+          <div class="timeline-item"><div class="timeline-year">02</div><div><b>Product / Graphic</b><p>Sketch, Package, Logo, Poster และ Infographic</p></div><div class="timeline-type">Design</div></div>
+          <div class="timeline-line"></div>
+          <div class="timeline-item"><div class="timeline-year">05</div><div><b>Game Concept</b><p>ออกแบบด่าน ปกเกม โลโก้ UI และต้นแบบเกม</p></div><div class="timeline-type">Build</div></div>
+          <div class="timeline-line"></div>
+          <div class="timeline-item"><div class="timeline-year">06</div><div><b>Character</b><p>Creative Character Design และ Character for 3D Model</p></div><div class="timeline-type">Imagine</div></div>
+          <div class="timeline-line"></div>
+          <div class="timeline-item"><div class="timeline-year">07</div><div><b>Storyboard</b><p>การเล่าเรื่องและถ่ายทอดความรู้ผ่าน Storyboard</p></div><div class="timeline-type">Narrate</div></div>
+          <div class="timeline-line"></div>
+          <div class="timeline-item"><div class="timeline-year">08</div><div><b>3D Model</b><p>ต่อยอดจากการออกแบบสู่รูปทรงสามมิติ</p></div><div class="timeline-type">Shape</div></div>
+          <div class="timeline-line"></div>
+          <div class="timeline-item"><div class="timeline-year">09</div><div><b>Unity Environment</b><p>Terrain, Maze, Lighting, Particles และฉากบอส</p></div><div class="timeline-type">Explore</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="contact">
+      <div>
+        <div class="section-kicker">04 / Contact</div>
+        <h2>Let's create<br>something <em>alive.</em></h2>
+        <p>ขอบคุณที่สละเวลาเข้าชม Portfolio หากต้องการสอบถามข้อมูลเพิ่มเติม สามารถติดต่อ Khing ได้ทางช่องทางด้านล่าง</p>
+        <div class="contact-actions">
+          <a class="cta" href="mailto:montakanhaocharoen@gmail.com">Email · montakanhaocharoen@gmail.com</a>
+          <a class="cta" href="tel:0613484557">Phone · 061-348-4557</a>
+          <a class="cta" href="https://pubhtml5.com/fhghy/jsgz/" target="_blank" rel="noopener">Portfolio ↗</a>
+          <a class="cta" href="https://instagram.com/mor_lum01" target="_blank" rel="noopener">Instagram · @mor_lum01</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>© 2026 Montakan Haocharoen</span>
+    <span>Designed as a living glass garden · Three.js</span>
+  </footer>
+
+  <script type="module">
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+    import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js";
+
+    const mount = document.getElementById("scene");
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0xdcefe1, 0.045);
+
+    const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 100);
+    camera.position.set(0, 1.2, 9);
+
+    const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+    renderer.setSize(innerWidth,innerHeight);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.05;
+    mount.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.enableZoom = false;
+    controls.enablePan = false;
+    controls.rotateSpeed = 0.22;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.28;
+    controls.minPolarAngle = Math.PI*0.35;
+    controls.maxPolarAngle = Math.PI*0.65;
+
+    const hemi = new THREE.HemisphereLight(0xeaffef, 0x254b38, 2.2);
+    scene.add(hemi);
+    const key = new THREE.DirectionalLight(0xffffff, 3.0);
+    key.position.set(4,6,5); scene.add(key);
+    const greenLight = new THREE.PointLight(0x79c996, 12, 18, 2);
+    greenLight.position.set(-4,2,2); scene.add(greenLight);
+
+    const glassMat = new THREE.MeshPhysicalMaterial({
+      color:0xd9f5e2, metalness:0.02, roughness:0.08,
+      transmission:0.72, thickness:0.8, transparent:true,
+      opacity:0.72, ior:1.45, clearcoat:1, clearcoatRoughness:0.08
+    });
+    const leafMat = new THREE.MeshPhysicalMaterial({
+      color:0x5b9d72, roughness:0.55, metalness:0.0,
+      transparent:true, opacity:0.72
+    });
+    const darkGlass = new THREE.MeshPhysicalMaterial({
+      color:0x2b6448, roughness:0.12, transmission:0.35,
+      transparent:true, opacity:0.7, clearcoat:1
+    });
+
+    const group = new THREE.Group();
+    scene.add(group);
+
+    // Main translucent sculpture
+    const ico = new THREE.Mesh(new THREE.IcosahedronGeometry(1.7,1), glassMat);
+    ico.position.set(2.9,0.4,-1.2);
+    ico.rotation.set(.3,.2,.15);
+    group.add(ico);
+
+    const torus = new THREE.Mesh(new THREE.TorusGeometry(2.45,.025,16,160), new THREE.MeshBasicMaterial({color:0x6ca883,transparent:true,opacity:.45}));
+    torus.rotation.x = Math.PI/2.6;
+    torus.position.set(2.9,.4,-1.2);
+    group.add(torus);
+
+    // Floating glass droplets
+    const droplets = new THREE.Group();
+    for(let i=0;i<18;i++){
+      const s = .08 + Math.random()*.16;
+      const d = new THREE.Mesh(new THREE.SphereGeometry(s,18,18), glassMat);
+      d.position.set((Math.random()-.5)*10,(Math.random()-.5)*7,(Math.random()-.5)*5-2);
+      droplets.add(d);
+    }
+    scene.add(droplets);
+
+    // Stylized low-poly leaves
+    function makeLeaf(x,y,z,scale,rot){
+      const shape = new THREE.Shape();
+      shape.moveTo(0,0);
+      shape.quadraticCurveTo(.45,.15,.7,.65);
+      shape.quadraticCurveTo(.15,.8,0,0);
+      const geo = new THREE.ShapeGeometry(shape);
+      const m = new THREE.Mesh(geo,leafMat);
+      m.position.set(x,y,z); m.scale.setScalar(scale); m.rotation.set(rot?.x||0,rot?.y||0,rot?.z||0);
+      return m;
+    }
+    const leaves = new THREE.Group();
+    for(let i=0;i<20;i++){
+      const l=makeLeaf(
+        (Math.random()-.5)*11,
+        -2.4+Math.random()*7,
+        -1+Math.random()*4,
+        .3+Math.random()*.75,
+        {x:Math.random()*1.2,y:Math.random()*1.2,z:Math.random()*6.28}
+      );
+      leaves.add(l);
+    }
+    scene.add(leaves);
+
+    // Ground glass rings
+    const rings = new THREE.Group();
+    for(let i=0;i<7;i++){
+      const r=1.5+i*.7;
+      const ring=new THREE.Mesh(
+        new THREE.RingGeometry(r,r+.008,128),
+        new THREE.MeshBasicMaterial({color:0x6da681,transparent:true,opacity:.16})
+      );
+      ring.rotation.x=-Math.PI/2;
+      ring.position.y=-3.3;
+      rings.add(ring);
+    }
+    scene.add(rings);
+
+    let scrollTarget=0, scrollCurrent=0;
+    addEventListener("scroll",()=>scrollTarget=scrollY/(document.body.scrollHeight-innerHeight));
+    addEventListener("resize",()=>{
+      camera.aspect=innerWidth/innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth,innerHeight);
+    });
+
+    const clock = new THREE.Clock();
+    function animate(){
+      requestAnimationFrame(animate);
+      const t=clock.getElapsedTime();
+      scrollCurrent += (scrollTarget-scrollCurrent)*.04;
+
+      ico.rotation.x = .3 + t*.10;
+      ico.rotation.y = .2 + t*.16;
+      torus.rotation.z = t*.055;
+      droplets.rotation.y = t*.025;
+      leaves.rotation.y = Math.sin(t*.12)*.06;
+      rings.rotation.z = t*.01;
+
+      // Gentle camera movement follows page progress.
+      camera.position.x += ((Math.sin(scrollCurrent*Math.PI*2)*1.1)-camera.position.x)*.018;
+      camera.position.y += ((1.2 + Math.sin(t*.25)*.15)-camera.position.y)*.018;
+      camera.lookAt(1.0, .1, -1.0);
+
+      controls.update();
+      renderer.render(scene,camera);
+    }
+    animate();
+  </script>
+</body>
+</html>
